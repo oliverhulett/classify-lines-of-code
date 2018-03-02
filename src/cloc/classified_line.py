@@ -10,11 +10,15 @@ class ClassifiedLine(object):
     '''
 
 
-    def __init__(self, filename, line_number, classifications=[], tags=[]):
+    def __init__(self, filename, line_number, classification):
         '''
         Constructor
         '''
         self.filename = filename
         self.line_number = line_number
-        self.classifications = classifications
-        self.tags = tags
+        self.classification = classification
+        self._secondary_classifications = []
+    
+    def add_secondary_classification(self, classification):
+        '''Add secondary classification.  Mostly for debugging purposes'''
+        self._secondary_classifications.append(classification)
