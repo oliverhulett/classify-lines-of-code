@@ -4,6 +4,9 @@ Created on 3 Mar. 2018
 @author: oliver
 '''
 
+class ClassificationError(Exception):
+    pass
+
 class ClassificationDescription(object):
     '''
     classdocs
@@ -28,7 +31,7 @@ class ClassificationDescription(object):
     
     def validate(self):
         '''Validate description sanity, throw if overall description is invalid.'''
-        for name, desc in self._root:
+        for name, desc in self._root.iteritems():
             self._validate_section(name, desc)
     
     def _validate_section(self, name, desc):
