@@ -7,6 +7,7 @@ Created on 3 Mar. 2018
 class ClassificationDescriptionError(Exception):
     pass
 
+
 class ClassificationDescription(object):
     '''
     classdocs
@@ -18,7 +19,6 @@ class ClassificationDescription(object):
         Constructor
         '''
         self._root = {}
-        self._current_section = None
     
     def add_descriptions(self, descriptions):
         '''
@@ -36,5 +36,11 @@ class ClassificationDescription(object):
     
     def _validate_section(self, name, desc):
         '''Recursively validate a description and its sub-descriptions.'''
-        
-            # TODO: validate classifications/tags?  Do reporters need semantic knowledge about them?
+        if 'based_on' in desc:
+            if desc['based_on'] not in self._root:
+                raise ClassificationDescriptionError("A referenced ClassficationDescription does not exist: {}".format(name))
+            for k, v in self._root[desc['based_on']].iteritems():
+                if k not in desc:
+                    desc[k] = v
+        if 'classifications' not in desc:
+            raise ClassificationDescriptionError("A ClassficationDescription must have a classification: {}".format(name))

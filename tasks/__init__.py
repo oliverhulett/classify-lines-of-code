@@ -13,13 +13,13 @@ def venv(ctx):
     execfile(activate_this_file, dict(__file__=activate_this_file))
 
 @task(pre=(venv,))
-def tests(ctx, verbose=False, junit=None):
+def tests(ctx, quiet=False, junit=None):
     ctx.run('pytest {args} {}/tests'.format(_PROJECT_DIR, args=' '.join([
-        '--verbose' if verbose else '',
+        '--verbose' if not quiet else '',
         '--junitxml={}'.format(junit) if junit is not None else '',
     ])))
 
-@task
+@task(pre=(tests,))
 def package(ctx):
     with WorkingDirectory(_PROJECT_DIR):
         for cmd in ('check', 'build', 'sdist', 'bdist',):

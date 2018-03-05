@@ -69,7 +69,7 @@ class TestClassificationDescription(unittest.TestCase):
             pytest.fail("Unexpected exception raised: " + str(e))
 
     def test_add_descriptions_no_classifications(self):
-        with pytest.raises(ClassificationDescriptionError, match="A ClassficationDescription must have a classification."):
+        with pytest.raises(ClassificationDescriptionError, match="A ClassficationDescription must have a classification: name"):
             self.description.add_descriptions({
                 "name": {
                     "line_regex": 'asdf',
@@ -77,7 +77,7 @@ class TestClassificationDescription(unittest.TestCase):
             })
 
     def test_add_descriptions_based_on_does_not_exist(self):
-        with pytest.raises(ClassificationDescriptionError, match="A referenced ClassficationDescription does not exist."):
+        with pytest.raises(ClassificationDescriptionError, match="A referenced ClassficationDescription does not exist: doctag"):
             self.description.add_descriptions(self.doctag_description)
 
     def test_add_descriptions_based_on(self):
