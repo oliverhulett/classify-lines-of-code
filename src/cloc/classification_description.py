@@ -4,7 +4,7 @@ Created on 3 Mar. 2018
 @author: oliver
 '''
 
-class ClassificationError(Exception):
+class ClassificationDescriptionError(Exception):
     pass
 
 class ClassificationDescription(object):

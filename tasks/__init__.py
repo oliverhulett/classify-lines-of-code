@@ -7,13 +7,15 @@ _PROJECT_DIR = os.path.dirname(_HERE)
 
 @task
 def venv(ctx):
-    ctx.run('virtualenv "{}/.venv"'.format(_PROJECT_DIR))
-    activate_this_file = '{}/.venv/bin/activate_this.py'.format(_PROJECT_DIR)
+    activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
+    if not os.path.exists(activate_this_file):
+        ctx.run('/bin/bash "{}/init.sh"'.format(_PROJECT_DIR))
     execfile(activate_this_file, dict(__file__=activate_this_file))
-    ctx.run('pip install {}'.format(' '.join([
-        'pytest',
-    ])))
 
 @task(pre=(venv,))
 def tests(ctx):
-    ctx.run('PYTHONPATH="{}/src" pytest tests'.format(_PROJECT_DIR))
+    ctx.run('pytest tests')
+
+@task
+def clean(ctx):
+    ctx.run('rm -rf .cache .pytest_cache .venv src/cloc.egg-info tests/cloc/__pycache__ src/*/*.pyc tests/*.pyc')
