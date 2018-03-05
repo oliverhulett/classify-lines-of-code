@@ -37,10 +37,12 @@ def clean(ctx):
             '.cache',
             '.pytest_cache',
             '.venv',
-            'src/cloc.egg-info',
-            'tests/cloc/__pycache__',
+            'build',
+            'dist',
             'src/*/*.pyc',
+            'src/cloc.egg-info',
             'tests/*.pyc',
+            'tests/cloc/__pycache__',
         ):
             ctx.run('rm -rf "{}"'.format(d))
 
