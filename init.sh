@@ -5,9 +5,10 @@
 ##	in develop mode and all the testing and development dependencies installed.
 ##
 
-HERE="$(cd "$(dirname "$0")" && pwd -P)"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 VENV_DIR="${HERE}/.venv"
-read -r -d '' REQUIREMENTS <<'EOF'
+
+read -r -d '' REQUIREMENTS <<-'EOF'
 	invoke
 	pytest
 EOF
@@ -22,4 +23,5 @@ if [ ! -e "${VENV_DIR}/requirements.txt" ] || [ "$(command cat "${VENV_DIR}/requ
 	pip install -e "${HERE}"
 fi
 
+# shellcheck source=.venv/bin/activate
 source "${VENV_DIR}/bin/activate"
