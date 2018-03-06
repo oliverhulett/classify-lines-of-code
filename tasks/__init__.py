@@ -5,6 +5,9 @@ from invoke import task
 _HERE = os.path.abspath(os.path.dirname(__file__))
 _PROJECT_DIR = os.path.dirname(_HERE)
 
+## TODO: Tasks for version bumping, documentation generation, deployment.
+## Also, split tests task into unit tests and application tests (and a parent tests task)
+
 
 @task
 def venv(ctx):
