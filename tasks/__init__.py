@@ -5,46 +5,76 @@ from invoke import task
 _HERE = os.path.abspath(os.path.dirname(__file__))
 _PROJECT_DIR = os.path.dirname(_HERE)
 
+
 @task
 def venv(ctx):
     activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
     if not os.path.exists(activate_this_file):
         ctx.run('/bin/bash "{}/init.sh"'.format(_PROJECT_DIR))
-    execfile(activate_this_file, dict(__file__=activate_this_file))
+    execfile(activate_this_file, dict(__file__=activate_this_file))  # NOQA
+
 
 @task(pre=(venv,))
 def tests(ctx, quiet=False, junit=None):
-    ctx.run('pytest {args} {}/tests'.format(_PROJECT_DIR, args=' '.join([
-        '--verbose' if not quiet else '',
-        '--junitxml={}'.format(junit) if junit is not None else '',
-    ])))
+    ctx.run(
+        'pytest {args} {}/tests'.format(
+            _PROJECT_DIR,
+            args=' '.join([
+                '--verbose' if not quiet else '',
+                '--junitxml={}'.format(junit) if junit is not None else '',
+            ])
+        )
+    )
+
+
+@task
+def format(ctx):
+    ctx.run('"{}/format.sh"'.format(_PROJECT_DIR))
+
 
 @task(pre=(tests,))
 def package(ctx):
     with WorkingDirectory(_PROJECT_DIR):
-        for cmd in ('check', 'build', 'sdist', 'bdist',):
+        for cmd in (
+                'check',
+                'build',
+                'sdist',
+                'bdist',
+        ):
             ctx.run('./setup.py {}'.format(cmd))
 
-@task(pre=(package,))
+
+@task(pre=(
+    format,
+    tests,
+    package,
+))
+def all(ctx):
+    pass
+
+
+@task
 def install(ctx):
     with WorkingDirectory(_PROJECT_DIR):
         ctx.run('pip install .')
+
 
 @task
 def clean(ctx):
     with WorkingDirectory(_PROJECT_DIR):
         for d in (
-            '.cache',
-            '.pytest_cache',
-            '.venv',
-            'build',
-            'dist',
-            'src/*/*.pyc',
-            'src/cloc.egg-info',
-            'tests/*.pyc',
-            'tests/cloc/__pycache__',
+                '.cache',
+                '.pytest_cache',
+                '.venv',
+                'build',
+                'dist',
+                'src/*/*.pyc',
+                'src/cloc.egg-info',
+                'tests/*.pyc',
+                'tests/cloc/__pycache__',
         ):
             ctx.run('rm -rf "{}"'.format(d))
+
 
 class WorkingDirectory(object):
     def __init__(self, wd):

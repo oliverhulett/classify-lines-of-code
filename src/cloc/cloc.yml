@@ -1,0 +1,4 @@
+"whitespace":
+  "line_regex": '^\\s*$'
+  "classifications":
+  - "Whitespace"
