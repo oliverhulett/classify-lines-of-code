@@ -26,8 +26,17 @@ class ClassificationDescription(object):
         
         Incoming sections should overwrite existing sections.  Validate that overall description is valid, throw if not.
         '''
-        self._root.update(descriptions)
+        self._merge(self._root, descriptions)
         self.validate()
+
+    def _merge(self, root, descriptions):
+        for name, desc in descriptions.iteritems():
+            if hasattr(desc, 'iteritems') and name in root:
+                ## desc is a dict() and it's key already exists in root, merge it recursively.
+                self._merge(root[name], desc)
+            else:
+                ## desc is a scalar (replace it in root) or it's key doesn't exist in root (so add it.)
+                root[name] = desc
 
     def validate(self):
         '''Validate description sanity, throw if overall description is invalid.'''
@@ -44,7 +53,27 @@ class ClassificationDescription(object):
             for k, v in self._root[desc['based_on']].iteritems():
                 if k not in desc:
                     desc[k] = v
-        if 'classifications' not in desc:
+
+        if ('entry_regex' in desc) and ('exit_regex' not in desc):
             raise ClassificationDescriptionError(
-                "A ClassficationDescription must have a classification: {}".format(name)
+                "A ClassificationDescription with an entry_regex must also have an exit_regex: {}".format(name)
             )
+        if ('exit_regex' in desc) and ('entry_regex' not in desc):
+            raise ClassificationDescriptionError(
+                "A ClassificationDescription with an exit_regex must also have an entry_regex: {}".format(name)
+            )
+
+        if 'subsections' in desc:
+            if 'line_regex' in desc:
+                raise ClassificationDescriptionError(
+                    "A ClassificationDescription with subsections must not have a line_regex: {}".format(name)
+                )
+            if 'entry_regex' not in desc or 'exit_regex' not in desc:
+                raise ClassificationDescriptionError(
+                    "A ClassficationDescription with subsections must have entry_regex and exit_regex: {}".format(name)
+                )
+        else:
+            if 'classifications' not in desc:
+                raise ClassificationDescriptionError(
+                    "A ClassficationDescription must have a classification: {}".format(name)
+                )

@@ -17,40 +17,47 @@ class TestClassificationDescription(unittest.TestCase):
         pass
 
     def test_add_description_good(self):
+        d = {
+            "name": {
+                "line_regex": 'asdf',
+                "classifications": ['nothing'],
+            },
+        }
         try:
-            self.description.add_descriptions({
-                "name": {
-                    "line_regex": 'asdf',
-                    "classifications": ['nothing'],
-                },
-            })
-            assert 1 == len(self.description._root.keys())
+            self.description.add_descriptions(d)
+            assert self.description._root == d
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
 
     def test_add_description_multiple(self):
+        d1 = {
+            "comment": {
+                "path_regex": '\\.py$',
+                "line_regex": '^\\s*#',
+                "classifications": ["Comments"],
+            },
+        }
+        d2 = {
+            "docstring_singleline": {
+                "path_regex": '\\.py$',
+                "line_regex": '^\\s*(\'\'\'|""").*\\1\\s*$',
+                "classifications": ["Comments"],
+            },
+            "docstring_multiline": {
+                "path_regex": '\\.py$',
+                "entry_regex": '^\\s*(\'\'\'|""")',
+                "exit_regex": '\\1\\s*$',
+                "classifications": ["Comments"],
+            },
+        }
         try:
-            self.description.add_descriptions({
-                "comment": {
-                    "path_regex": '\\.py$',
-                    "line_regex": '^\\s*#',
-                    "classifications": ["Comments"],
-                },
-            })
-            self.description.add_descriptions({
-                "docstring_singleline": {
-                    "path_regex": '\\.py$',
-                    "line_regex": '^\\s*(\'\'\'|""").*\\1\\s*$',
-                    "classifications": ["Comments"],
-                },
-                "docstring_multiline": {
-                    "path_regex": '\\.py$',
-                    "entry_regex": '^\\s*(\'\'\'|""")',
-                    "exit_regex": '\\1\\s*$',
-                    "classifications": ["Comments"],
-                },
-            })
-            assert 3 == len(self.description._root.keys())
+            self.description.add_descriptions(d1)
+            self.description.add_descriptions(d2)
+            assert self.description._root == {
+                "comment": d1["comment"],
+                "docstring_singleline": d2["docstring_singleline"],
+                "docstring_multiline": d2["docstring_multiline"]
+            }
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
 
@@ -66,6 +73,7 @@ class TestClassificationDescription(unittest.TestCase):
                     "classifications": ["Everything"],
                 },
             })
+            assert self.description._root == {"name": {"classifications": ["Everything"]}}
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
 
@@ -92,6 +100,38 @@ class TestClassificationDescription(unittest.TestCase):
                 },
             })
 
+    def test_add_descriptions_subsections_and_line_regex(self):
+        with pytest.raises(ClassificationDescriptionError,
+                           match="A ClassificationDescription with subsections must not have a line_regex: name1"):
+            self.description.add_descriptions({
+                "name1": {
+                    "line_regex": 'asdf',
+                    "subsections": {
+                        "name2": {
+                            "classifications": ["Classification"],
+                        },
+                    },
+                },
+            })
+
+    def test_add_descriptions_entry_regex_without_exit_regex(self):
+        with pytest.raises(ClassificationDescriptionError,
+                           match="A ClassificationDescription with an entry_regex must also have an exit_regex: name1"):
+            self.description.add_descriptions({
+                "name1": {
+                    "entry_regex": 'asdf',
+                },
+            })
+
+    def test_add_descriptions_exit_regex_without_entry_regex(self):
+        with pytest.raises(ClassificationDescriptionError,
+                           match="A ClassificationDescription with an exit_regex must also have an entry_regex: name1"):
+            self.description.add_descriptions({
+                "name1": {
+                    "exit_regex": 'asdf',
+                },
+            })
+
     def test_add_descriptions_based_on_does_not_exist(self):
         with pytest.raises(ClassificationDescriptionError,
                            match="A referenced ClassficationDescription does not exist: doctag"):
@@ -103,28 +143,35 @@ class TestClassificationDescription(unittest.TestCase):
             })
 
     def test_add_descriptions_based_on(self):
+        d1 = {
+            "docstring_singleline": {
+                "path_regex": '\\.py$',
+                "line_regex": '^\\s*(\'\'\'|""").*\\1\\s*$',
+                "classifications": ["Comments"],
+            },
+            "docstring_multiline": {
+                "path_regex": '\\.py$',
+                "entry_regex": '^\\s*(\'\'\'|""")',
+                "exit_regex": '\\1\\s*$',
+                "classifications": ["Comments"],
+            },
+        }
+        d2 = {
+            "doctag": {
+                "based_on": "docstring_multiline",
+                "line_regex": '(^|\\s)@[a-z]+:\\s',
+            },
+        }
         try:
-            self.description.add_descriptions({
-                "docstring_singleline": {
-                    "path_regex": '\\.py$',
-                    "line_regex": '^\\s*(\'\'\'|""").*\\1\\s*$',
-                    "classifications": ["Comments"],
-                },
-                "docstring_multiline": {
-                    "path_regex": '\\.py$',
-                    "entry_regex": '^\\s*(\'\'\'|""")',
-                    "exit_regex": '\\1\\s*$',
-                    "classifications": ["Comments"],
-                },
-            })
-            self.description.add_descriptions({
-                "doctag": {
-                    "based_on": "docstring_multiline",
-                    "line_regex": '(^|\\s)@[a-z]+:\\s',
-                },
-            })
-            assert 1 == len(self.description._root['doctag']['classifications'])
-            assert "Comments" == self.description._root['doctag']['classifications'][0]
+            self.description.add_descriptions(d1)
+            self.description.add_descriptions(d2)
+            d3 = d1["docstring_multiline"]
+            d3.update(d2["doctag"])
+            assert self.description._root == {
+                "docstring_singleline": d1["docstring_singleline"],
+                "docstring_multiline": d1["docstring_multiline"],
+                "doctag": d3
+            }
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
 
@@ -141,41 +188,69 @@ class TestClassificationDescription(unittest.TestCase):
                     "classifications": ['Nothing'],
                 },
             })
-            assert 1 == len(self.description._root)
-            assert "Nothing" == self.description._root['name']['classifications'][0]
+            assert self.description._root == {"name": {"line_regex": '^$', "classifications": ['Nothing']}}
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
 
     def test_add_descriptions_merging_add_subsections(self):
+        d1 = {
+            "docstring_multiline": {
+                "path_regex": '\\.py$',
+                "entry_regex": '^\\s*(\'\'\'|""")',
+                "exit_regex": '\\1\\s*$',
+                "classifications": ["Comments"],
+            },
+        }
+        d2 = {
+            "docstring_multiline": {
+                "subsections": {
+                    "doctag": {
+                        "classifications": ['Documentation'],
+                        "line_regex": '(^|\\s)@[a-z]+:\\s',
+                    },
+                },
+            },
+        }
+        try:
+            self.description.add_descriptions(d1)
+            self.description.add_descriptions(d2)
+            d1["docstring_multiline"]["subsections"] = d2["docstring_multiline"]["subsections"]
+            assert self.description._root == d1
+        except Exception as e:
+            pytest.fail("Unexpected exception raised: " + str(e))
+
+    def test_add_descriptions_merging_nested_subsections(self):
         try:
             self.description.add_descriptions({
-                "docstring_multiline": {
-                    "path_regex": '\\.py$',
-                    "entry_regex": '^\\s*(\'\'\'|""")',
-                    "exit_regex": '\\1\\s*$',
-                    "classifications": ["Comments"],
+                "name1": {
+                    "entry_regex": 'asdf',
+                    "exit_regex": 'fdsa',
+                    "subsections": {
+                        "name2": {
+                            "classifications": ['Class'],
+                        },
+                    },
                 },
             })
             self.description.add_descriptions({
-                "docstring_multiline": {
+                "name1": {
                     "subsections": {
-                        "doctag": {
-                            "classifications": ['Documentation'],
-                            "line_regex": '(^|\\s)@[a-z]+:\\s',
+                        "name3": {
+                            "classifications": ['Klass'],
                         },
                     },
                 },
             })
             assert self.description._root == {
-                "docstring_multiline": {
-                    "path_regex": '\\.py$',
-                    "entry_regex": '^\\s*(\'\'\'|""")',
-                    "exit_regex": '\\1\\s*$',
-                    "classifications": ["Comments"],
+                "name1": {
+                    "entry_regex": 'asdf',
+                    "exit_regex": 'fdsa',
                     "subsections": {
-                        "doctag": {
-                            "classifications": ['Documentation'],
-                            "line_regex": '(^|\\s)@[a-z]+:\\s',
+                        "name2": {
+                            "classifications": ['Class'],
+                        },
+                        "name3": {
+                            "classifications": ['Klass'],
                         },
                     },
                 },
