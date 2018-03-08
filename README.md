@@ -4,9 +4,17 @@ There's also some reporting available.
 
 This project is a standard python package, install with `pip` or your favourite python package installer.
 
+```
+$ pip install https://github.com/oliverhulett/classify-lines-of-code.git
+```
+
 ## Usage
 
 See `cloc -h` after installing.
+
+```
+cloc [-h] [-l path] [-c path [path ...]] [-i RE] [-e RE] [-V] path [path ...]
+```
 
 
 ## How and Why
@@ -18,5 +26,10 @@ The program reads configuration from YAML or JSON files, then for each line in e
 ## Contributing
 
 * Set up your development environment by sourcing `init.sh`.
-* Build and run tests with `invoke`.  See `inv -h` and `inv -l` to get started.
+* Build and run tests with `invoke`.
+    * See `inv -h` and `inv -l` to get started.
+    * Try `inv all` to fully check your commit.
+    * Try `inv tests` to run all tests.
 * Please format code with `inv format` or `./format.sh` before committing (it saves arguments over style.)
+* Use the GitHub Wiki for documentation.
+* Use GitHub Issues to track issues, create feature requests, and discuss proposals and changes.
