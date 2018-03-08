@@ -8,13 +8,10 @@ This project is a standard python package, install with `pip` or your favourite 
 $ pip install https://github.com/oliverhulett/classify-lines-of-code.git
 ```
 
+
 ## Usage
 
 See `cloc -h` after installing.
-
-```
-cloc [-h] [-l path] [-c path [path ...]] [-i RE] [-e RE] [-V] path [path ...]
-```
 
 
 ## How and Why
@@ -23,13 +20,14 @@ My theory was that well designed code libraries are not only well tested, i.e. h
 I wanted to test this theory, but I couldn't find a line of code counter that would allow me to classify lines of code into things like test code, test fixture code, etc. so I wrote this.
 The program reads configuration from YAML or JSON files, then for each line in each file in the project match to an entry in the configuration and store the classified line.  At the end of the process the list of classified lines is passed to a reporter for display.
 
+
 ## Contributing
 
 * Set up your development environment by sourcing `init.sh`.
 * Build and run tests with `invoke`.
-    * See `inv -h` and `inv -l` to get started.
-    * Try `inv all` to fully check your commit.
-    * Try `inv tests` to run all tests.
+  * See `inv -h` and `inv -l` to get started.
+  * Try `inv all` to fully check your commit.
+  * Try `inv tests` to run all tests.
 * Please format code with `inv format` or `./format.sh` before committing (it saves arguments over style.)
 * Use the GitHub Wiki for documentation.
 * Use GitHub Issues to track issues, create feature requests, and discuss proposals and changes.
