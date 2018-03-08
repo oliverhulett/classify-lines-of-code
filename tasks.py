@@ -2,8 +2,7 @@ import os
 
 from invoke import task
 
-_HERE = os.path.abspath(os.path.dirname(__file__))
-_PROJECT_DIR = os.path.dirname(_HERE)
+_PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 @task
