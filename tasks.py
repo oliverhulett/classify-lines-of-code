@@ -5,9 +5,6 @@ from invoke import task
 _HERE = os.path.abspath(os.path.dirname(__file__))
 _PROJECT_DIR = os.path.dirname(_HERE)
 
-## TODO: Tasks for version bumping, documentation generation, deployment.
-## Also, split tests task into unit tests and application tests (and a parent tests task)
-
 
 @task
 def venv(ctx):
@@ -47,19 +44,27 @@ def package(ctx):
             ctx.run('./setup.py {}'.format(cmd))
 
 
+@task(pre=(package,))
+def install(ctx):
+    with WorkingDirectory(_PROJECT_DIR):
+        ctx.run('pip uninstall --yes cloc', warn=True)
+        ctx.run('pip install .')
+
+
 @task(pre=(
     format,
     tests,
-    package,
+    install,
 ))
 def all(ctx):
     pass
 
 
 @task
-def install(ctx):
+def develop(ctx):
     with WorkingDirectory(_PROJECT_DIR):
-        ctx.run('pip install .')
+        ctx.run('pip uninstall --yes cloc', warn=True)
+        ctx.run('pip install -e .')
 
 
 @task
@@ -76,7 +81,7 @@ def clean(ctx):
                 'tests/*.pyc',
                 'tests/cloc/__pycache__',
         ):
-            ctx.run('rm -rf "{}"'.format(d))
+            ctx.run('rm -rf "{}"'.format(d), warn=True)
 
 
 class WorkingDirectory(object):

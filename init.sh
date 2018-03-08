@@ -8,6 +8,7 @@
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 VENV_DIR="${HERE}/.venv"
 
+# Requirements for the development environment and testing only.  Runtime dependencies should be listed in setup.py.
 read -r -d '' REQUIREMENTS <<-'EOF'
 	invoke
 	pytest
@@ -20,6 +21,7 @@ fi
 if [ ! -e "${VENV_DIR}/requirements.txt" ] || [ "$(command cat "${VENV_DIR}/requirements.txt")" != "${REQUIREMENTS}" ]; then
 	echo "${REQUIREMENTS}" >"${VENV_DIR}/requirements.txt"
 	pip install -r "${VENV_DIR}/requirements.txt"
+	pip uninstall --yes cloc
 	pip install -e "${HERE}"
 fi
 

@@ -1,7 +1,6 @@
 #!/bin/bash
 ##
-##	Format files in this project.  TODO: Make this a pre-commit hook
-##	It saves on arguments.
+##	Format files in this project.  It saves on arguments.
 ##
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"

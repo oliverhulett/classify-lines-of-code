@@ -1,21 +1,5 @@
-#!/usr/bin/python2.7
+#!/usr/bin/env python
 # encoding: utf-8
-'''
-cloc.__main__ -- shortdesc
-
-cloc.__main__ is a description
-
-It defines classes_and_methods
-
-@author:     user_name
-
-@copyright:  2018 organization_name. All rights reserved.
-
-@license:    license
-
-@contact:    user_email
-@deffield    updated: Updated
-'''
 
 import sys
 import os
@@ -24,6 +8,7 @@ import logging
 import glob
 import re
 import yaml
+import json
 
 from cloc.classification_description import ClassificationDescription
 from cloc.line_classifier import LineClassifier
@@ -48,7 +33,7 @@ def main(argv=None):
 
     # Setup argument parser
     parser = argparse.ArgumentParser(
-        'classify_lines_of_code',
+        'cloc',
         description='''
             Classify lines of code is a configuration driven LOC counter.  It matches lines of code based on regular
             expressions found in the configuration file(s).  The configuration file(s) allow nested sections so that
@@ -56,26 +41,17 @@ def main(argv=None):
             previous match.
         ''',
     )
-    parser.add_argument(
-        "-l", "--logconfig", metavar="path", help="use logging configuration file [default: %(default)s]"
-    )
-    parser.add_argument(
-        "-c", "--config", metavar="path", nargs="+", help="use configuration file [default: %(default)s]"
-    )
+    parser.add_argument('-V', '--version', action='version', version=program_version_message)
+    parser.add_argument("-l", "--logconfig", metavar="path", help="use logging configuration file")
+    parser.add_argument("-c", "--config", metavar="path", nargs="+", help="use configuration file")
     parser.add_argument(
         "-i",
         "--include",
         metavar="RE",
-        help=
-        "only include paths matching this regex pattern. Note: exclude is given preference over include. [default: %(default)s]"
+        help="only include paths matching this regex pattern. Note: exclude is given preference over include."
     )
-    parser.add_argument(
-        "-e", "--exclude", metavar="RE", help="exclude paths matching this regex pattern. [default: %(default)s]"
-    )
-    parser.add_argument('-V', '--version', action='version', version=program_version_message)
-    parser.add_argument(
-        dest="paths", metavar="path", nargs='+', help="paths to folder(s) with source file(s) [default: %(default)s]"
-    )
+    parser.add_argument("-e", "--exclude", metavar="RE", help="exclude paths matching this regex pattern.")
+    parser.add_argument(dest="paths", metavar="path", nargs='+', help="paths to folder(s) with source file(s)")
 
     # Process arguments
     args = parser.parse_args()
@@ -101,10 +77,12 @@ def main(argv=None):
     )
     for config_file in _default_files:
         if os.path.exists(config_file):
-            classification_description.add_descriptions(yaml.load(open(config_file, 'r').read()))
+            _loader = json if config_file.endswith('.json') else yaml
+            classification_description.add_descriptions(_loader.load(open(config_file, 'r').read()))
 
     for config_file in args.config:
-        classification_description.add_descriptions(yaml.load(open(config_file, 'r').read()))
+        _loader = json if config_file.endswith('.json') else yaml
+        classification_description.add_descriptions(_loader.load(open(config_file, 'r').read()))
 
     _log_startup(args, classification_description)
 
