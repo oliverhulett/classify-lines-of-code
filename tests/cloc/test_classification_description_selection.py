@@ -3,6 +3,8 @@ Created on 3 Mar. 2018
 
 @author: oliver
 '''
+import sys
+
 import unittest
 import pytest
 
@@ -42,7 +44,6 @@ class TestClassificationDescription(unittest.TestCase):
                 },
             },
         }
-        self.description._active_matchers = [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-2"], 'entry-regex-2')]
 
     def tearDown(self):
         pass
@@ -58,12 +59,45 @@ class TestClassificationDescription(unittest.TestCase):
         assert matchers == self.description._active_matchers
     
     def test_get_matchers_from_file_no_match(self):
+        self.description._active_matchers = [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-2"], 'entry-regex-2')]
         matchers = self.description.get_matchers_for_file("path/to/file")
         assert matchers == []
         assert matchers == self.description._active_matchers
     
     def test_get_next_matchers_line_regex_matched(self):
+        self.description._active_matchers = [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-2"], 'entry-regex-2')]
         matchers = self.description.get_next_matchers(Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'))
+        assert matchers == self.description._active_matchers
+
+    def test_get_next_matchers_entry_regex_matched(self):
+        self.description._active_matchers = [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-2"], 'entry-regex-2')]
+        matchers = self.description.get_next_matchers(Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-2"], 'entry-regex-2'))
+        assert matchers == [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_EXIT, ["top-level-2"], 'exit-regex-2')]
+        assert matchers == self.description._active_matchers
+
+    def test_get_next_matchers_entry_regex_with_subsections_matched(self):
+        self.description._active_matchers = [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-3"], 'entry-regex-3')]
+        matchers = self.description.get_next_matchers(Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-3"], 'entry-regex-3'))
+        assert matchers == [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_EXIT, ["top-level-3"], 'exit-regex-3'), Matcher(Matcher.RE_TYPE_LINE, ["top-level-3", "nested-1"], 'line-regex-3-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-3", "nested-2"], 'entry-regex-3-2')]
+        assert matchers == self.description._active_matchers
+
+    def test_get_next_matchers_exit_regex_matched(self):
+        self.description._active_matchers = [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_EXIT, ["top-level-2"], 'exit-regex-2')]
+        matchers = self.description.get_next_matchers(Matcher(Matcher.RE_TYPE_EXIT, ["top-level-2"], 'exit-regex-2'))
+        assert matchers == [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-2"], 'entry-regex-2')]
+        assert matchers == self.description._active_matchers
+
+    def test_get_next_matchers_exit_regex_with_subsection_matched(self):
+        self.description._active_matchers = [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_EXIT, ["top-level-3"], 'exit-regex-3'), Matcher(Matcher.RE_TYPE_LINE, ["top-level-3", "nested-1"], 'line-regex-3-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-3", "nested-2"], 'entry-regex-3-2')]
+        matchers = self.description.get_next_matchers(Matcher(Matcher.RE_TYPE_EXIT, ["top-level-3"], 'exit-regex-3'))
+        assert matchers == [Matcher(Matcher.RE_TYPE_LINE, ["top-level-1"], 'line-regex-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-3"], 'entry-regex-3')]
+        assert matchers == self.description._active_matchers
+    
+    def test_get_next_matchers_multiple_entry_regexes_matched(self):
+        self.description._active_matchers = [Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-2"], 'entry-regex-2'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-3"], 'entry-regex-3')]
+        matchers = self.description.get_next_matchers(Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-2"], 'entry-regex-2'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-3"], 'entry-regex-3'))
+        assert matchers == [Matcher(Matcher.RE_TYPE_EXIT, ["top-level-2"], 'exit-regex-2'), Matcher(Matcher.RE_TYPE_EXIT, ["top-level-3"], 'exit-regex-3'), Matcher(Matcher.RE_TYPE_LINE, ["top-level-3", "nested-1"], 'line-regex-3-1'), Matcher(Matcher.RE_TYPE_ENTRY, ["top-level-3", "nested-2"], 'entry-regex-3-2')]
+        assert matchers == self.description._active_matchers
 
 
 if __name__ == "__main__":

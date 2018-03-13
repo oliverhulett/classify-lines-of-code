@@ -3,6 +3,8 @@ Created on 3 Mar. 2018
 
 @author: oliver
 '''
+import sys
+
 import unittest
 import pytest
 
@@ -48,7 +50,7 @@ class TestClassificationDescription(unittest.TestCase):
     def test_add_description_good(self):
         try:
             self.description.add_descriptions(self.d)
-            assert self.description._root == self.d
+            assert self.description._descriptions == self.d
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
 
@@ -60,7 +62,7 @@ class TestClassificationDescription(unittest.TestCase):
             })
         try:
             self.description.add_descriptions({})
-            assert self.description._root == {}
+            assert self.description._descriptions == {}
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
     
@@ -160,7 +162,7 @@ class TestClassificationDescription(unittest.TestCase):
             self.description.add_descriptions(d2)
             d3 = d1["docstring_multiline"]
             d3.update(d2["doctag"])
-            assert self.description._root == {
+            assert self.description._descriptions == {
                 "docstring_singleline": d1["docstring_singleline"],
                 "docstring_multiline": d1["docstring_multiline"],
                 "doctag": d3
@@ -192,7 +194,7 @@ class TestClassificationDescription(unittest.TestCase):
         try:
             self.description.add_descriptions(d1)
             self.description.add_descriptions(d2)
-            assert self.description._root == {
+            assert self.description._descriptions == {
                 "comment": d1["comment"],
                 "docstring_singleline": d2["docstring_singleline"],
                 "docstring_multiline": d2["docstring_multiline"]
@@ -213,7 +215,7 @@ class TestClassificationDescription(unittest.TestCase):
                     "classifications": ['Nothing'],
                 },
             })
-            assert self.description._root == {"name": {"line_regex": '^$', "classifications": ['Nothing']}}
+            assert self.description._descriptions == {"name": {"line_regex": '^$', "classifications": ['Nothing']}}
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
 
@@ -240,7 +242,7 @@ class TestClassificationDescription(unittest.TestCase):
             self.description.add_descriptions(d1)
             self.description.add_descriptions(d2)
             d1["docstring_multiline"]["subsections"] = d2["docstring_multiline"]["subsections"]
-            assert self.description._root == d1
+            assert self.description._descriptions == d1
         except Exception as e:
             pytest.fail("Unexpected exception raised: " + str(e))
 
@@ -266,7 +268,7 @@ class TestClassificationDescription(unittest.TestCase):
                     },
                 },
             })
-            assert self.description._root == {
+            assert self.description._descriptions == {
                 "name1": {
                     "entry_regex": 'asdf',
                     "exit_regex": 'fdsa',

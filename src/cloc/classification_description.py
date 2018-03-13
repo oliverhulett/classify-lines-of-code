@@ -4,9 +4,31 @@ Created on 3 Mar. 2018
 @author: oliver
 '''
 
+import re
+
 
 class ClassificationDescriptionError(Exception):
     pass
+
+
+class Matcher(object):
+    (
+        RE_TYPE_LINE,
+        RE_TYPE_ENTRY,
+        RE_TYPE_EXIT,
+    ) = range(3)
+    
+    def __init__(self, t, path, regex):
+        self.type = t
+        self.description_path = path
+        self.regex_str = regex
+        self.regex = re.compile(self.regex_str)
+    
+    def __eq__(self, other):
+        return self.type == other.type and self.description_path == other.description_path and self.regex_str == other.regex_str
+    
+    def matches(self, line):
+        return self.regex.matches(line)
 
 
 class ClassificationDescription(object):
@@ -18,7 +40,8 @@ class ClassificationDescription(object):
         '''
         Constructor
         '''
-        self._root = {}
+        self._descriptions = {}
+        self._active_matchers = []
 
     def add_descriptions(self, descriptions):
         '''
@@ -26,7 +49,7 @@ class ClassificationDescription(object):
         
         Incoming sections should overwrite existing sections.  Validate that overall description is valid, throw if not.
         '''
-        self._merge(self._root, descriptions)
+        self._merge(self._descriptions, descriptions)
         self.validate()
 
     def _merge(self, root, descriptions):
@@ -40,17 +63,17 @@ class ClassificationDescription(object):
 
     def validate(self):
         '''Validate description sanity, throw if overall description is invalid.'''
-        for name, desc in self._root.iteritems():
+        for name, desc in self._descriptions.iteritems():
             self._validate_section(name, desc)
 
     def _validate_section(self, name, desc):
         '''Recursively validate a description and its sub-descriptions.'''
         if 'based_on' in desc:
-            if desc['based_on'] not in self._root:
+            if desc['based_on'] not in self._descriptions:
                 raise ClassificationDescriptionError(
                     "A referenced ClassficationDescription does not exist: {}".format(name)
                 )
-            for k, v in self._root[desc['based_on']].iteritems():
+            for k, v in self._descriptions[desc['based_on']].iteritems():
                 if k not in desc:
                     desc[k] = v
 
@@ -77,3 +100,18 @@ class ClassificationDescription(object):
                 raise ClassificationDescriptionError(
                     "A ClassficationDescription must have a classification: {}".format(name)
                 )
+    
+    def get_matchers_from_file(self, filename):
+        self._active_matchers = []
+        for name, desc in self._descriptions.iteritems():
+            match = re.search(desc['path_regex'], filename)
+            if match:
+                if 'line_regex' in desc:
+                    self._active_matchers.append(Matcher(Matcher.RE_TYPE_LINE, [name], desc['line_regex']))
+                if 'entry_regex' in desc:
+                    self._active_matchers.append(Matcher(Matcher.RE_TYPE_ENTRY, [name], desc['entry_regex']))
+        return self._active_matchers
+    
+    def get_next_matchers(self, *matched):
+        for match in matched:
+            
