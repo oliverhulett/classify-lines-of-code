@@ -16,6 +16,6 @@ class LineClassifier(object):
         '''
         self._descr = classification_description
         self._collection = line_collection
-    
+
     def classify_file(self, f):
         assert f or not f
