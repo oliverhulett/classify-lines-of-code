@@ -11,12 +11,15 @@ VENV_DIR="${HERE}/.venv"
 # Requirements for the development environment and testing only.  Runtime dependencies should be listed in setup.py.
 read -r -d '' REQUIREMENTS <<-'EOF'
 	invoke
-	pytest
+	unittest2
 EOF
 
 if [ ! -e "${VENV_DIR}/bin/activate" ]; then
 	virtualenv -p /usr/bin/python2.7 --prompt="(.venv:cloc) " "${VENV_DIR}"
 fi
+
+# shellcheck source=.venv/bin/activate
+source "${VENV_DIR}/bin/activate"
 
 if [ ! -e "${VENV_DIR}/requirements.txt" ] || [ "$(command cat "${VENV_DIR}/requirements.txt")" != "${REQUIREMENTS}" ]; then
 	echo "${REQUIREMENTS}" >"${VENV_DIR}/requirements.txt"
@@ -24,6 +27,3 @@ if [ ! -e "${VENV_DIR}/requirements.txt" ] || [ "$(command cat "${VENV_DIR}/requ
 	pip uninstall --yes cloc
 	pip install -e "${HERE}"
 fi
-
-# shellcheck source=.venv/bin/activate
-source "${VENV_DIR}/bin/activate"
