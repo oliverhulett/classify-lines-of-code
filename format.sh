@@ -60,7 +60,7 @@ done
 ##         --option2 \
 ##             --option3 \
 ## # @formatter:on
-cd "${HERE}" && git ls-files | grep -iE '.(ba)?sh$' | while read -r; do
+	cd "${HERE}" && git ls-files | grep -iE '.(ba)?sh$' | while read -r; do
 	echo -n "Formatting Shell: ${REPLY}..."
 	beautysh --indent-size=4 --tab --files "${REPLY}" || echo -ne '\tFailed!'
 	echo
