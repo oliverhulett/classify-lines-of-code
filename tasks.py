@@ -62,8 +62,6 @@ def check(ctx):
             'pip install https://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download'
         )
     with ctx.cd(_PROJECT_DIR):
-        if not os.path.exists('.pycheckrc'):
-            ctx.run('pychecker --rcfile >"{}"'.format('.pycheckrc'))
         ctx.run('pychecker --config "{}" {}'.format('.pycheckrc', ' '.join(_src_dirs)))
 
 
