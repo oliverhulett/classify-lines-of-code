@@ -14,3 +14,9 @@ class LineCollection(object):
         '''
         Constructor
         '''
+    
+    def skipped_directory(self, d):
+        assert d or not d
+    
+    def skipped_file(self, f):
+        assert f or not f

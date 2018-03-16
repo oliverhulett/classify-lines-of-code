@@ -15,3 +15,6 @@ class TextReporter(object):
         Constructor
         '''
         self._lines = line_collection
+    
+    def report(self):
+        assert False

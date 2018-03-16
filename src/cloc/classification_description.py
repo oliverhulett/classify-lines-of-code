@@ -23,11 +23,11 @@ class Matcher(object):
 
     @classmethod
     def type_to_str(cls, t):
-        if t == Matcher.RE_TYPE_ENTRY:
+        if t == cls.RE_TYPE_ENTRY:
             return "entry"
-        if t == Matcher.RE_TYPE_EXIT:
+        if t == cls.RE_TYPE_EXIT:
             return "exit"
-        if t == Matcher.RE_TYPE_LINE:
+        if t == cls.RE_TYPE_LINE:
             return "line"
 
     def __init__(self, t, path, regex, classifications):

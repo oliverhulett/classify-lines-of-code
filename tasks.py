@@ -22,28 +22,11 @@ def _discover(ctx):
 
 
 @task
-def develop(ctx):
-    ctx.run('pip uninstall --yes cloc', warn=True)
-    with ctx.cd(_PROJECT_DIR):
-        ctx.run('pip install -e .')
-
-
-@task(post=(develop,))
 def _venv(ctx):
     activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
     if not os.path.exists(activate_this_file):
         ctx.run('/bin/bash "{}/init.sh"'.format(_PROJECT_DIR))
     execfile(activate_this_file, dict(__file__=activate_this_file))  # NOQA
-
-
-@task(pre=(
-    _discover,
-    _venv,
-))
-def tests(ctx, quiet=False):
-    for dirname in _test_dirs:
-        with ctx.cd(os.path.join(_PROJECT_DIR, dirname)):
-            ctx.run('unit2 {}'.format('--verbose' if not quiet else '--fail-fast'))
 
 
 @task
@@ -62,7 +45,25 @@ def check(ctx):
             'pip install https://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download'
         )
     with ctx.cd(_PROJECT_DIR):
-        ctx.run('pychecker --config "{}" {}'.format('.pycheckrc', ' '.join(_src_dirs)))
+        ctx.run('pychecker --stdlib --limit 100 {}'.format(' '.join([os.path.join(sd, '*.py') for sd in _src_dirs])))
+
+
+@task
+def develop(ctx):
+    ctx.run('pip uninstall --yes cloc', warn=True)
+    with ctx.cd(_PROJECT_DIR):
+        ctx.run('pip install -e .')
+
+
+@task(pre=(
+    _discover,
+    _venv,
+    develop,
+))
+def tests(ctx, quiet=False):
+    for dirname in _test_dirs:
+        with ctx.cd(os.path.join(_PROJECT_DIR, dirname)):
+            ctx.run('unit2 {}'.format('--verbose' if not quiet else '--fail-fast'))
 
 
 @task(pre=(

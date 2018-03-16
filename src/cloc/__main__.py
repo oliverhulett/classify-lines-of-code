@@ -51,12 +51,14 @@ def main(argv=None):
         help="only include paths matching this regex pattern. Note: exclude is given preference over include."
     )
     parser.add_argument("-e", "--exclude", metavar="RE", help="exclude paths matching this regex pattern.")
-    parser.add_argument(dest="paths", metavar="path", nargs='+', help="paths to folder(s) with source file(s)")
+    parser.add_argument(
+        dest="paths", metavar="path", nargs='+', default=".", help="paths to folder(s) with source file(s)"
+    )
 
     # Process arguments
     args = parser.parse_args()
 
-    _setup_logging(args.logconf)
+    _setup_logging(args.logconfig)
 
     if args.include and args.exclude and args.include == args.exclude:
         raise Exception("include and exclude pattern are equal! Nothing will be processed.")
@@ -66,7 +68,7 @@ def main(argv=None):
     classification_description = ClassificationDescription()
     _etc = os.path.join('/', 'etc', 'cloc')
     _home = os.path.expanduser(os.path.join('~', '.cloc'))
-    _default_files = (os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cloc.yml'),)
+    _default_files = [os.path.join(os.path.abspath(os.path.dirname(__file__)), 'cloc.yml')]
     _default_files += sorted(
         glob.glob(os.path.join(_etc, '*.yml')) + glob.glob(os.path.join(_etc, '*.yaml')) +
         glob.glob(os.path.join(_etc, '*.json'))
@@ -80,9 +82,10 @@ def main(argv=None):
             _loader = json if config_file.endswith('.json') else yaml
             classification_description.add_descriptions(_loader.load(open(config_file, 'r').read()))
 
-    for config_file in args.config:
-        _loader = json if config_file.endswith('.json') else yaml
-        classification_description.add_descriptions(_loader.load(open(config_file, 'r').read()))
+    if args.config:
+        for config_file in args.config:
+            _loader = json if config_file.endswith('.json') else yaml
+            classification_description.add_descriptions(_loader.load(open(config_file, 'r').read()))
 
     _log_startup(args, classification_description)
 
@@ -123,5 +126,5 @@ def _should_process_file(include_pattern, exclude_pattern, f):
     return True
 
 
-if __name__ == "__main__":
-    sys.exit(main())
+#if __name__ == "__main__":
+#    sys.exit(main())
