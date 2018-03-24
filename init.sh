@@ -12,6 +12,7 @@ VENV_DIR="${HERE}/.venv"
 read -r -d '' REQUIREMENTS <<-'EOF'
 	invoke
 	unittest2
+	coverage
 EOF
 
 if [ ! -e "${VENV_DIR}/bin/activate" ]; then
