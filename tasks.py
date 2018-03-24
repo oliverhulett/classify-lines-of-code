@@ -120,7 +120,7 @@ def package(ctx, verbose=False, quiet=False):
                 'sdist',
                 'bdist',
         ):
-            ctx.run('./setup.py {} {} {}'.format('--verbose' if verbose else '', '--quiet' if quiet else '', cmd))
+            ctx.run('./setup.py {} {} {}'.format('--verbose' if verbose else '', '--quiet' if quiet else '', cmd), hide='err')
 
 
 @task(pre=(call(package, quiet=True),))
