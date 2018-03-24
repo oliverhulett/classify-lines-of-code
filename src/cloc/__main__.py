@@ -126,5 +126,5 @@ def _should_process_file(include_pattern, exclude_pattern, f):
     return True
 
 
-#if __name__ == "__main__":
-#    sys.exit(main())
+if (__name__ == "__main__") and (os.path.basename(sys.argv[0]) != 'checker.py'):
+    sys.exit(main())

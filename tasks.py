@@ -45,7 +45,7 @@ def check(ctx):
             'pip install https://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download'
         )
     with ctx.cd(_PROJECT_DIR):
-        ctx.run('pychecker --stdlib --limit 100 {}'.format(' '.join([os.path.join(sd, '*.py') for sd in _src_dirs])))
+        ctx.run('pychecker --stdlib --import --limit 100 {}'.format(' '.join([os.path.join(sd, '*.py') for sd in _src_dirs])))
 
 
 @task
