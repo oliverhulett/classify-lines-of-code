@@ -8,8 +8,16 @@ _test_dirs = []
 _deduping = {}
 
 
+def _reentrant(key):
+    global _deduping
+    if key in _deduping:
+        return True
+    _deduping[key] = True
+    return False
+
+
 def _discover(ctx):
-    if 'discover' in _deduping:
+    if _reentrant('discover'):
         return
     global _src_dirs
     global _test_dirs
@@ -24,7 +32,7 @@ def _discover(ctx):
 
 
 def _venv(ctx):
-    if 'venv' in _deduping:
+    if _reentrant('env'):
         return
     activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
     if not os.path.exists(activate_this_file):
@@ -75,6 +83,8 @@ def tests(ctx, quiet=False):
 
 
 def _coverage(ctx):
+    if _reentrant('coverage'):
+        return
     _discover(ctx)
     _venv(ctx)
     develop(ctx)
@@ -120,7 +130,10 @@ def package(ctx, verbose=False, quiet=False):
                 'sdist',
                 'bdist',
         ):
-            ctx.run('./setup.py {} {} {}'.format('--verbose' if verbose else '', '--quiet' if quiet else '', cmd), hide='err')
+            ctx.run(
+                './setup.py {} {} {}'.format('--verbose' if verbose else '', '--quiet' if quiet else '', cmd),
+                hide='err'
+            )
 
 
 @task(pre=(call(package, quiet=True),))
