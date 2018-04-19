@@ -1,6 +1,8 @@
 import os
+import sys
 
 from invoke import task, call
+from invoke.exceptions import Failure
 
 _PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 _src_dirs = []
@@ -32,15 +34,14 @@ def _discover(ctx):
 
 
 def _venv(ctx):
+    if sys.version_info < (2, 6) or sys.version_info >= (3, 0):
+        raise Failure("Project supports Python v2.7 only.  (Maybe Python v2.6, but definitely not Python v3.)")
     if _reentrant('env'):
         return
     activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
     if not os.path.exists(activate_this_file):
         ctx.run('/bin/bash "{}/init.sh"'.format(_PROJECT_DIR))
-    try:
-        execfile(activate_this_file, dict(__file__=activate_this_file))  # NOQA
-    except:
-        exec (open(activate_this_file).read())
+    execfile(activate_this_file, dict(__file__=activate_this_file))  # NOQA
 
 
 @task
@@ -59,6 +60,20 @@ def check(ctx):
         ctx.run(
             'pip install https://sourceforge.net/projects/pychecker/files/pychecker/0.8.19/pychecker-0.8.19.tar.gz/download'
         )
+        # pip installing pychecker doesn't work properly, the generated executable paths the installed module wrong...
+        for p in (
+                'python2',
+                'python2.6',
+                'python2.7',
+        ):
+            pychecker_module = os.path.join(_PROJECT_DIR, '.venv', 'lib', p, 'site-packages', 'pychecker', 'checker.py')
+            if os.path.exists(pychecker_module):
+                break
+        with open(pychecker_file, 'w') as f:
+            f.writelines([
+                '#!/bin/sh\n',
+                '"{}" "{}" "$@"\n'.format(os.path.join(_PROJECT_DIR, '.venv', 'bin', 'python'), pychecker_module)
+            ])
     with ctx.cd(_PROJECT_DIR):
         ctx.run(
             'pychecker --stdlib --import --limit 100 {}'.format(
