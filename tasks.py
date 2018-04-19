@@ -10,7 +10,10 @@ def venv(ctx):
     activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
     if not os.path.exists(activate_this_file):
         ctx.run('/bin/bash "{}/init.sh"'.format(_PROJECT_DIR))
-    execfile(activate_this_file, dict(__file__=activate_this_file))  # NOQA
+    try:
+        execfile(activate_this_file, dict(__file__=activate_this_file))  # NOQA
+    except:
+        exec (open(activate_this_file).read())
 
 
 @task(pre=(venv,))
