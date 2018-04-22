@@ -119,10 +119,14 @@ def _coverage(ctx):
 
 
 @task
-def coverage_report(ctx, annotate=False, html=False, xml=False):
+def coverage_report(ctx, all=False, annotate=False, html=False, xml=False):
     _discover(ctx)
     _venv(ctx)
     _coverage(ctx)
+    if all:
+        annotate=True
+        html=True
+        xml=True
     with ctx.cd(os.path.join(_PROJECT_DIR)):
         ctx.run('coverage report')
         if annotate:
@@ -136,6 +140,11 @@ def coverage_report(ctx, annotate=False, html=False, xml=False):
 @task(post=(coverage_report,))
 def coverage(ctx):
     pass
+
+@task
+def reset_coverage(ctx):
+    with ctx.cd(_PROJECT_DIR):
+        ctx.run("rm -rf .coverage coverage")
 
 
 @task(pre=(tests,))
@@ -171,7 +180,7 @@ def uninstall(ctx):
     format,
     check,
     tests,
-    call(coverage_report, annotate=True, html=True, xml=True),
+    call(coverage_report, all=True),
     install,
 ))
 def all(ctx):
