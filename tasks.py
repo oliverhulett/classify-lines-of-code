@@ -34,14 +34,12 @@ def _discover(ctx):
 
 
 def _venv(ctx):
-    if sys.version_info < (2, 6) or sys.version_info >= (3, 0):
-        raise Failure("Project supports Python v2.7 only.  (Maybe Python v2.6, but definitely not Python v3.)")
     if _reentrant('env'):
         return
     activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
     if not os.path.exists(activate_this_file):
         ctx.run('/bin/bash "{}/init.sh"'.format(_PROJECT_DIR))
-    execfile(activate_this_file, dict(__file__=activate_this_file))  # NOQA
+    exec (compile(open(activate_this_file).read(), activate_this_file, 'exec'), dict(__file__=activate_this_file))
 
 
 @task
@@ -92,7 +90,7 @@ def develop(ctx):
 
 
 @task(pre=(develop,))
-def tests(ctx, quiet=False):
+def test(ctx, quiet=False):
     _discover(ctx)
     _venv(ctx)
     for dirname in _test_dirs:
@@ -124,9 +122,9 @@ def coverage_report(ctx, all=False, annotate=False, html=False, xml=False):
     _venv(ctx)
     _coverage(ctx)
     if all:
-        annotate=True
-        html=True
-        xml=True
+        annotate = True
+        html = True
+        xml = True
     with ctx.cd(os.path.join(_PROJECT_DIR)):
         ctx.run('coverage report')
         if annotate:
@@ -141,13 +139,14 @@ def coverage_report(ctx, all=False, annotate=False, html=False, xml=False):
 def coverage(ctx):
     pass
 
+
 @task
 def reset_coverage(ctx):
     with ctx.cd(_PROJECT_DIR):
         ctx.run("rm -rf .coverage coverage")
 
 
-@task(pre=(tests,))
+@task(pre=(test,))
 def package(ctx, verbose=False, quiet=False):
     _venv(ctx)
     with ctx.cd(_PROJECT_DIR):
@@ -179,7 +178,7 @@ def uninstall(ctx):
 @task(pre=(
     format,
     check,
-    tests,
+    test,
     call(coverage_report, all=True),
     install,
 ))

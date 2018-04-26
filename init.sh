@@ -16,15 +16,16 @@ read -r -d '' REQUIREMENTS <<-'EOF'
 EOF
 
 if [ ! -e "${VENV_DIR}/bin/activate" ]; then
-	virtualenv -p /usr/bin/python2.7 --prompt="(.venv:cloc) " "${VENV_DIR}"
+	virtualenv -p "$(command which python2.7)" --prompt="(.venv:cloc) " "${VENV_DIR}" || return 1
 fi
 
 # shellcheck source=.venv/bin/activate
+# shellcheck disable=SC1091
 source "${VENV_DIR}/bin/activate"
 
 if [ ! -e "${VENV_DIR}/requirements.txt" ] || [ "$(command cat "${VENV_DIR}/requirements.txt")" != "${REQUIREMENTS}" ]; then
 	echo "${REQUIREMENTS}" >"${VENV_DIR}/requirements.txt"
-	pip install -r "${VENV_DIR}/requirements.txt"
-	pip uninstall --yes cloc
-	pip install -e "${HERE}"
+	pip install -q -r "${VENV_DIR}/requirements.txt"
+	pip uninstall -q --yes cloc
+	pip install -q -e "${HERE}"
 fi

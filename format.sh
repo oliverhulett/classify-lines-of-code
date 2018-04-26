@@ -9,8 +9,13 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 source "${HERE}/init.sh"
 pip -q install beautysh yapf ruamel.yaml
 
+function lsfiles()
+{
+	cd "${HERE}" && git ls-files -- '[^converage/]*'
+}
+
 ## Format JSON
-cd "${HERE}" && git ls-files | grep -iE '.json$' | while read -r; do
+lsfiles | grep -iE '.json$' | while read -r; do
 	echo -n "Formatting JSON: ${REPLY}..."
 	# shellcheck disable=SC2005
 	echo "$(python -m json.tool "${REPLY}")" >"${REPLY}" || echo -ne '\tFailed!'
@@ -18,7 +23,7 @@ cd "${HERE}" && git ls-files | grep -iE '.json$' | while read -r; do
 done
 
 ## Format YAML
-cd "${HERE}" && git ls-files | grep -iE '.ya?ml$' | while read -r; do
+lsfiles | grep -iE '.ya?ml$' | while read -r; do
 	echo -n "Formatting YAML: ${REPLY}..."
 	python <<-EOF
 		from ruamel.yaml import YAML
@@ -45,7 +50,7 @@ done
 ## BAZ = {
 ##     # ... some very large, complex data literal.
 ## }  # yapf: disable
-cd "${HERE}" && git ls-files | grep -iE '.py$' | while read -r; do
+lsfiles | grep -iE '.py$' | while read -r; do
 	echo -n "Formatting Python: ${REPLY}..."
 	yapf --in-place --style="${HERE}/.style.yapf" "${REPLY}" || echo -ne '\tFailed!'
 	echo
@@ -60,7 +65,7 @@ done
 ##         --option2 \
 ##             --option3 \
 ## # @formatter:on
-	cd "${HERE}" && git ls-files | grep -iE '.(ba)?sh$' | while read -r; do
+	lsfiles | grep -iE '.(ba)?sh$' | while read -r; do
 	echo -n "Formatting Shell: ${REPLY}..."
 	beautysh --indent-size=4 --tab --files "${REPLY}" || echo -ne '\tFailed!'
 	echo
