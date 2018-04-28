@@ -1,8 +1,6 @@
 import os
-import sys
 
 from invoke import task, call
-from invoke.exceptions import Failure
 
 _PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 _src_dirs = []
@@ -38,7 +36,7 @@ def _venv(ctx):
         return
     activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
     if not os.path.exists(activate_this_file):
-        ctx.run('/bin/bash "{}/init.sh"'.format(_PROJECT_DIR))
+        ctx.run('/bin/bash -c "source {}/init.sh"'.format(_PROJECT_DIR))
     exec (compile(open(activate_this_file).read(), activate_this_file, 'exec'), dict(__file__=activate_this_file))
 
 
@@ -81,15 +79,15 @@ def check(ctx):
 
 
 @task
-def develop(ctx):
+def develop(ctx, quiet=False):
     _discover(ctx)
     _venv(ctx)
-    ctx.run('pip uninstall --yes cloc', warn=True)
+    ctx.run('pip {} uninstall --yes cloc'.format("--quiet" if quiet else ""), warn=True)
     with ctx.cd(_PROJECT_DIR):
-        ctx.run('pip install -e .')
+        ctx.run('pip {} install -e .'.format("--quiet" if quiet else ""))
 
 
-@task(pre=(develop,))
+@task(pre=(call(develop, True),))
 def test(ctx, quiet=False):
     _discover(ctx)
     _venv(ctx)
@@ -103,7 +101,7 @@ def _coverage(ctx):
         return
     _discover(ctx)
     _venv(ctx)
-    develop(ctx)
+    develop(ctx, True)
     for dirname in _test_dirs:
         td = os.path.join(_PROJECT_DIR, dirname)
         with ctx.cd(td):
@@ -163,16 +161,16 @@ def package(ctx, verbose=False, quiet=False):
 
 
 @task(pre=(call(package, quiet=True),))
-def install(ctx):
+def install(ctx, quiet=False):
     _venv(ctx)
-    ctx.run('pip uninstall --yes cloc', warn=True)
+    ctx.run('pip {} uninstall --yes cloc'.format("--quiet" if quiet else ""), warn=True)
     with ctx.cd(_PROJECT_DIR):
-        ctx.run('pip install .')
+        ctx.run('pip {} install .'.format("--quiet" if quiet else ""))
 
 
 @task
-def uninstall(ctx):
-    ctx.run('pip uninstall --yes cloc', warn=True)
+def uninstall(ctx, quiet=False):
+    ctx.run('pip {} uninstall --yes cloc'.format("--quiet" if quiet else ""), warn=True)
 
 
 @task(pre=(

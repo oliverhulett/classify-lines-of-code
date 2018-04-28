@@ -3,3 +3,5 @@
 cloc.egg-info
 build
 dist
+.coverage
+coverage/coverage.xml

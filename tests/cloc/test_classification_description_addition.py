@@ -60,31 +60,29 @@ class TestClassificationDescription(unittest.TestCase):
         except Exception as e:
             self.fail("Unexpected exception raised: " + str(e))
 
-        with self.assertRaises(ClassificationDescriptionError,
-                               msg="A top level ClassficationDescription must have a path_regex: name"):
+        with self.assertRaisesRegex(ClassificationDescriptionError,
+                                    "A top level ClassificationDescription must have a path_regex: name"):
             self.description.add_descriptions({
                 "name": {},
             })
 
     def test_add_descriptions_top_level_no_path_regex(self):
-        for name in self.d.iterkeys():
-            descriptions = self.d
-            with self.assertRaises(ClassificationDescriptionError,
-                                   msg="A top level ClassificationDescription must have a path_regex: " + name):
-                del descriptions[name]["path_regex"]
-                self.description.add_descriptions(descriptions)
+        with self.assertRaisesRegex(ClassificationDescriptionError,
+                                    "A top level ClassificationDescription must have a path_regex: top-level-1"):
+            del self.d["top-level-1"]["path_regex"]
+            self.description.add_descriptions(self.d)
 
     def test_add_descriptions_line_regex_or_entry_exit_1(self):
-        with self.assertRaises(
-                ClassificationDescriptionError, msg=
+        with self.assertRaisesRegex(
+                ClassificationDescriptionError,
                 "A ClassificationDescription must have either a line_regex or an entry_regex and an exit_regex: top-level-1"
         ):
             del self.d["top-level-1"]["line_regex"]
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_line_regex_or_entry_exit_2(self):
-        with self.assertRaises(
-                ClassificationDescriptionError, msg=
+        with self.assertRaisesRegex(
+                ClassificationDescriptionError,
                 "A ClassificationDescription must have either a line_regex or an entry_regex and an exit_regex: top-level-2"
         ):
             del self.d["top-level-2"]["entry_regex"]
@@ -92,21 +90,23 @@ class TestClassificationDescription(unittest.TestCase):
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_line_regex_no_classifications(self):
-        with self.assertRaises(ClassificationDescriptionError,
-                               msg="A ClassficationDescription must have a classification or subsections: top-level-1"):
+        with self.assertRaisesRegex(
+                ClassificationDescriptionError,
+                "A ClassificationDescription must have a classification or subsections: top-level-1"):
             del self.d["top-level-1"]["classifications"]
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_entry_and_exit_regexes_no_classifications(self):
-        with self.assertRaises(ClassificationDescriptionError,
-                               msg="A ClassficationDescription must have a classification or subsections: top-level-2"):
+        with self.assertRaisesRegex(
+                ClassificationDescriptionError,
+                "A ClassificationDescription must have a classification or subsections: top-level-2"):
             del self.d["top-level-2"]["classifications"]
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_subsections_and_line_regex(self):
-        with self.assertRaises(
+        with self.assertRaisesRegex(
                 ClassificationDescriptionError,
-                msg="A ClassificationDescription with subsections must not have a line_regex: top-level-1"):
+                "A ClassificationDescription with subsections must not have a line_regex: top-level-1"):
             self.d["top-level-1"]["subsections"] = {
                 "name": {
                     "line_regex": 'asdf',
@@ -116,39 +116,44 @@ class TestClassificationDescription(unittest.TestCase):
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_subsections_require_entry_and_exit_regexes(self):
-        with self.assertRaises(
+        #         with self.assertRaisesRegex(
+        #                 ClassificationDescriptionError,
+        #                 "A ClassificationDescription with subsections must have an entry_regex and an exit_regex: top-level-3"
+        #         ):
+        #         Can't actually get there because other validations will trigger first...
+        with self.assertRaisesRegex(
                 ClassificationDescriptionError,
-                msg="A ClassficationDescription with subsections must have an entry_regex and an exit_regex: top-level-3"
+                "A ClassificationDescription must have either a line_regex or an entry_regex and an exit_regex: top-level-3"
         ):
             del self.d["top-level-3"]["entry_regex"]
             del self.d["top-level-3"]["exit_regex"]
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_entry_regex_without_exit_regex(self):
-        with self.assertRaises(
+        with self.assertRaisesRegex(
                 ClassificationDescriptionError,
-                msg="A ClassificationDescription with an entry_regex must also have an exit_regex: top-level-2"):
+                "A ClassificationDescription with an entry_regex must also have an exit_regex: top-level-2"):
             del self.d["top-level-2"]["exit_regex"]
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_exit_regex_without_entry_regex(self):
-        with self.assertRaises(
+        with self.assertRaisesRegex(
                 ClassificationDescriptionError,
-                msg="A ClassificationDescription with an exit_regex must also have an entry_regex: top-level-2"):
+                "A ClassificationDescription with an exit_regex must also have an entry_regex: top-level-2"):
             del self.d["top-level-2"]["entry_regex"]
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_validate_subsections(self):
-        with self.assertRaises(
-                ClassificationDescriptionError, msg=
+        with self.assertRaisesRegex(
+                ClassificationDescriptionError,
                 "A ClassificationDescription must have either a line_regex or an entry_regex and an exit_regex: top-level-3/nested-1"
         ):
             del self.d["top-level-3"]["subsections"]["nested-1"]["line_regex"]
             self.description.add_descriptions(self.d)
 
     def test_add_descriptions_based_on_does_not_exist(self):
-        with self.assertRaises(ClassificationDescriptionError,
-                               msg="A referenced ClassficationDescription does not exist: doctag"):
+        with self.assertRaisesRegex(ClassificationDescriptionError,
+                                    "A referenced ClassificationDescription does not exist: doctag"):
             self.description.add_descriptions({
                 "doctag": {
                     "based_on": "docstring_multiline",

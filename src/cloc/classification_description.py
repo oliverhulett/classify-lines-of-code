@@ -95,14 +95,14 @@ class ClassificationDescription(object):
         if 'based_on' in desc:
             if desc['based_on'] not in self._descriptions:
                 raise ClassificationDescriptionError(
-                    "A referenced ClassficationDescription does not exist", path + [name]
+                    "A referenced ClassificationDescription does not exist", path + [name]
                 )
             for k, v in self._descriptions[desc['based_on']].iteritems():
                 if k not in desc:
                     desc[k] = v
 
         if (len(path) == 0) and ('path_regex' not in desc):
-            raise ClassificationDescriptionError("A top level ClassficationDescription must have a path_regex", [name])
+            raise ClassificationDescriptionError("A top level ClassificationDescription must have a path_regex", [name])
 
         if ('entry_regex' in desc) and ('exit_regex' not in desc):
             raise ClassificationDescriptionError(
@@ -126,7 +126,7 @@ class ClassificationDescription(object):
                 )
             if 'entry_regex' not in desc or 'exit_regex' not in desc:
                 raise ClassificationDescriptionError(
-                    "A ClassficationDescription with subsections must have an entry_regex and an exit_regex",
+                    "A ClassificationDescription with subsections must have an entry_regex and an exit_regex",
                     path + [name]
                 )
             for n, d in desc['subsections'].iteritems():
@@ -134,7 +134,7 @@ class ClassificationDescription(object):
         else:
             if 'classifications' not in desc:
                 raise ClassificationDescriptionError(
-                    "A ClassficationDescription must have a classification or subsections", path + [name]
+                    "A ClassificationDescription must have a classification or subsections", path + [name]
                 )
 
     def get_matchers_for_file(self, filename):
