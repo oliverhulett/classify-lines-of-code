@@ -1,8 +1,7 @@
 *.pyc
-.cache
-__pycache__
-.pytest_cache
 .venv
 cloc.egg-info
 build
 dist
+.coverage
+coverage/coverage.xml
