@@ -38,6 +38,14 @@ lsfiles | grep -iE '.ya?ml$' | while read -r; do
 	echo
 done
 
+## Format HTML/XML
+lsfiles | grep -iE '.(x|x?ht)ml$' | while read -r; do
+	echo -n "Formatting XML/HTML:  ${REPLY}..."
+	# shellcheck disable=SC2005
+	echo "$(tidy -i -asxhtml -q "${REPLY}")" >"${REPLY}" || echo -ne '\tFailed!'
+	echo
+done
+
 ## Format Python
 ## See: https://github.com/google/yapf
 ## Disable formatting for sections with:
