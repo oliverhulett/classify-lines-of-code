@@ -37,7 +37,7 @@ def _venv(ctx):
     activate_this_file = os.path.join(_PROJECT_DIR, ".venv", "bin", "activate_this.py")
     if not os.path.exists(activate_this_file):
         ctx.run('/bin/bash -c "source {}/init.sh"'.format(_PROJECT_DIR))
-    exec(compile(open(activate_this_file).read(), activate_this_file, 'exec'), dict(__file__=activate_this_file))
+    exec (compile(open(activate_this_file).read(), activate_this_file, 'exec'), dict(__file__=activate_this_file))
 
 
 @task

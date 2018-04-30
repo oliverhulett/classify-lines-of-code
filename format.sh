@@ -11,7 +11,7 @@ pip -q install beautysh yapf ruamel.yaml
 
 function lsfiles()
 {
-	cd "${HERE}" && git ls-files -- '[^docs/htmlcov/]*'
+	cd "${HERE}" && git ls-files | grep -vE '^docs/htmlcov/'
 }
 
 ## Format JSON
