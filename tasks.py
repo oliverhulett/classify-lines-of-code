@@ -126,11 +126,11 @@ def coverage_report(ctx, all=False, annotate=False, html=False, xml=False):
     with ctx.cd(os.path.join(_PROJECT_DIR)):
         ctx.run('coverage report')
         if annotate:
-            ctx.run('coverage annotate --directory=coverage/annotated')
+            ctx.run('coverage annotate --directory=docs/annotated')
         if html:
-            ctx.run('coverage html --directory=coverage/htmlcov')
+            ctx.run('coverage html --directory=docs/htmlcov')
         if xml:
-            ctx.run('coverage xml -o coverage/coverage.xml')
+            ctx.run('coverage xml -o coverage.xml')
 
 
 @task(post=(coverage_report,))
