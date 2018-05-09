@@ -8,3 +8,4 @@ src/cloc/classified_line.py
 src/cloc/line_classifier.py
 src/cloc/line_collection.py
 src/cloc/text_reporter.py
+src/cloc/config/cloc.yml
