@@ -1,8 +1,8 @@
-'''
+"""
 Created on 3 Mar. 2018
 
 @author: oliver
-'''
+"""
 
 import re
 
@@ -11,15 +11,11 @@ class ClassificationDescriptionError(Exception):
     def __init__(self, error, description_path):
         self.error = error
         self.description_path = description_path
-        super(ClassificationDescriptionError, self).__init__(error + ": {}".format('/'.join(description_path)))
+        super(ClassificationDescriptionError, self).__init__(error + ": {}".format("/".join(description_path)))
 
 
 class Matcher(object):
-    (
-        RE_TYPE_LINE,
-        RE_TYPE_ENTRY,
-        RE_TYPE_EXIT,
-    ) = range(3)
+    (RE_TYPE_LINE, RE_TYPE_ENTRY, RE_TYPE_EXIT) = range(3)
 
     @classmethod
     def type_to_str(cls, t):
@@ -56,29 +52,29 @@ class Matcher(object):
 
 
 class ClassificationDescription(object):
-    '''
+    """
     classdocs
-    '''
+    """
 
     def __init__(self):
-        '''
+        """
         Constructor
-        '''
+        """
         self._descriptions = {}
         self._active_matchers = []
 
     def add_descriptions(self, descriptions):
-        '''
+        """
         Add a description map to the current description.
         
         Incoming sections should overwrite existing sections.  Validate that overall description is valid, throw if not.
-        '''
+        """
         self._merge(self._descriptions, descriptions)
         self.validate()
 
     def _merge(self, root, descriptions):
         for name, desc in descriptions.iteritems():
-            if hasattr(desc, 'iteritems') and name in root:
+            if hasattr(desc, "iteritems") and name in root:
                 ## desc is a dict() and it's key already exists in root, merge it recursively.
                 self._merge(root[name], desc)
             else:
@@ -86,53 +82,53 @@ class ClassificationDescription(object):
                 root[name] = desc
 
     def validate(self):
-        '''Validate description sanity, throw if overall description is invalid.'''
+        """Validate description sanity, throw if overall description is invalid."""
         for name, desc in self._descriptions.iteritems():
             self._validate_section([], name, desc)
 
     def _validate_section(self, path, name, desc):
-        '''Recursively validate a description and its sub-descriptions.'''
-        if 'based_on' in desc:
-            if desc['based_on'] not in self._descriptions:
+        """Recursively validate a description and its sub-descriptions."""
+        if "based_on" in desc:
+            if desc["based_on"] not in self._descriptions:
                 raise ClassificationDescriptionError(
                     "A referenced ClassificationDescription does not exist", path + [name]
                 )
-            for k, v in self._descriptions[desc['based_on']].iteritems():
+            for k, v in self._descriptions[desc["based_on"]].iteritems():
                 if k not in desc:
                     desc[k] = v
 
-        if (len(path) == 0) and ('path_regex' not in desc):
+        if (len(path) == 0) and ("path_regex" not in desc):
             raise ClassificationDescriptionError("A top level ClassificationDescription must have a path_regex", [name])
 
-        if ('entry_regex' in desc) and ('exit_regex' not in desc):
+        if ("entry_regex" in desc) and ("exit_regex" not in desc):
             raise ClassificationDescriptionError(
                 "A ClassificationDescription with an entry_regex must also have an exit_regex", path + [name]
             )
-        if ('exit_regex' in desc) and ('entry_regex' not in desc):
+        if ("exit_regex" in desc) and ("entry_regex" not in desc):
             raise ClassificationDescriptionError(
                 "A ClassificationDescription with an exit_regex must also have an entry_regex", path + [name]
             )
 
-        if ('line_regex' not in desc) and ('entry_regex' not in desc) and ('exit_regex' not in desc):
+        if ("line_regex" not in desc) and ("entry_regex" not in desc) and ("exit_regex" not in desc):
             raise ClassificationDescriptionError(
                 "A ClassificationDescription must have either a line_regex or an entry_regex and an exit_regex",
-                path + [name]
+                path + [name],
             )
 
-        if 'subsections' in desc:
-            if 'line_regex' in desc:
+        if "subsections" in desc:
+            if "line_regex" in desc:
                 raise ClassificationDescriptionError(
                     "A ClassificationDescription with subsections must not have a line_regex", path + [name]
                 )
-            if 'entry_regex' not in desc or 'exit_regex' not in desc:
+            if "entry_regex" not in desc or "exit_regex" not in desc:
                 raise ClassificationDescriptionError(
                     "A ClassificationDescription with subsections must have an entry_regex and an exit_regex",
-                    path + [name]
+                    path + [name],
                 )
-            for n, d in desc['subsections'].iteritems():
+            for n, d in desc["subsections"].iteritems():
                 self._validate_section(path + [name], n, d)
         else:
-            if 'classifications' not in desc:
+            if "classifications" not in desc:
                 raise ClassificationDescriptionError(
                     "A ClassificationDescription must have a classification or subsections", path + [name]
                 )
@@ -140,18 +136,16 @@ class ClassificationDescription(object):
     def get_matchers_for_file(self, filename):
         self._active_matchers = []
         for name, desc in self._descriptions.iteritems():
-            match = re.search(desc['path_regex'], filename)
+            match = re.search(desc["path_regex"], filename)
             if match:
-                classifications = desc['classifications'] if 'classifications' in desc else []
-                if 'line_regex' in desc:
+                classifications = desc["classifications"] if "classifications" in desc else []
+                if "line_regex" in desc:
                     self._active_matchers.append(
-                        Matcher(Matcher.RE_TYPE_LINE,
-                                [name], desc['line_regex'], classifications)
+                        Matcher(Matcher.RE_TYPE_LINE, [name], desc["line_regex"], classifications)
                     )
-                if 'entry_regex' in desc:
+                if "entry_regex" in desc:
                     self._active_matchers.append(
-                        Matcher(Matcher.RE_TYPE_ENTRY,
-                                [name], desc['entry_regex'], classifications)
+                        Matcher(Matcher.RE_TYPE_ENTRY, [name], desc["entry_regex"], classifications)
                     )
         return self._active_matchers
 
@@ -173,27 +167,27 @@ class ClassificationDescription(object):
         self._active_matchers.remove(match)
         d = self._get_description(match.description_path)
         self._active_matchers.append(
-            Matcher(Matcher.RE_TYPE_EXIT, match.description_path, d['exit_regex'], match.classifications)
+            Matcher(Matcher.RE_TYPE_EXIT, match.description_path, d["exit_regex"], match.classifications)
         )
-        if 'subsections' in d:
-            for name, sub_d in d['subsections'].iteritems():
-                classifications = match.classifications + sub_d['classifications'] if 'classifications' in sub_d else []
+        if "subsections" in d:
+            for name, sub_d in d["subsections"].iteritems():
+                classifications = match.classifications + sub_d["classifications"] if "classifications" in sub_d else []
                 path = match.description_path + [name]
-                if 'line_regex' in sub_d:
+                if "line_regex" in sub_d:
                     self._active_matchers.append(
-                        Matcher(Matcher.RE_TYPE_LINE, path, sub_d['line_regex'], classifications)
+                        Matcher(Matcher.RE_TYPE_LINE, path, sub_d["line_regex"], classifications)
                     )
-                if 'entry_regex' in sub_d:
+                if "entry_regex" in sub_d:
                     self._active_matchers.append(
-                        Matcher(Matcher.RE_TYPE_ENTRY, path, sub_d['entry_regex'], classifications)
+                        Matcher(Matcher.RE_TYPE_ENTRY, path, sub_d["entry_regex"], classifications)
                     )
 
     def _get_next_matchers_from_exit(self, match):
-        p = '/'.join(match.description_path)
+        p = "/".join(match.description_path)
         for m in self._active_matchers[:]:
-            if '/'.join(m.description_path).startswith(p):
+            if "/".join(m.description_path).startswith(p):
                 self._active_matchers.remove(m)
         d = self._get_description(match.description_path)
         self._active_matchers.append(
-            Matcher(Matcher.RE_TYPE_ENTRY, match.description_path, d['entry_regex'], match.classifications)
+            Matcher(Matcher.RE_TYPE_ENTRY, match.description_path, d["entry_regex"], match.classifications)
         )
