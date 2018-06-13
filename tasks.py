@@ -41,12 +41,13 @@ def _venv(ctx):
 
 
 @task
-def format(ctx):
+def format(ctx, verbose=False):
     _discover(ctx)
     _venv(ctx)
     with ctx.cd(_PROJECT_DIR):
         ctx.run(
-            'bash <(curl -sS https://bitbucket.org/oliverhulett/formatter/raw/master/run.sh) format --exclude docs/htmlcov/'
+            'bash <(curl -sS https://bitbucket.org/oliverhulett/formatter/raw/master/run.sh) {} format --exclude docs/htmlcov/'.
+            format('--verbose' if verbose else '')
         )
 
 
