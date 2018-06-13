@@ -13,8 +13,6 @@ def get_package_data_files():
     return files
 
 
-print get_package_data_files()
-
 setup(
     name='cloc',
     version='1.0',
