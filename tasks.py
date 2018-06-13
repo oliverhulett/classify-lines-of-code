@@ -44,7 +44,10 @@ def _venv(ctx):
 def format(ctx):
     _discover(ctx)
     _venv(ctx)
-    ctx.run('"{}/format.sh"'.format(_PROJECT_DIR))
+    with ctx.cd(_PROJECT_DIR):
+        ctx.run(
+            'bash <(curl -sS https://bitbucket.org/oliverhulett/formatter/raw/master/run.sh) format --exclude docs/htmlcov/'
+        )
 
 
 @task
