@@ -28,6 +28,6 @@ The program reads configuration from YAML or JSON files, then for each line in e
   * See `inv -h` and `inv -l` to get started.
   * Try `inv all` to fully check your commit.
   * Try `inv tests` to run all tests.
-* Please format code with `inv format` or `./format.sh` before committing (it saves arguments over style.)
+* Please format code with `inv format` before committing (it saves arguments over style.)
 * Use the GitHub Wiki for documentation.
 * Use GitHub Issues to track issues, create feature requests, and discuss proposals and changes.
